@@ -16,6 +16,15 @@ The goals / steps of this project are the following:
 * Analyze the softmax probabilities of the new images
 * Summarize the results with a written report
 
+[//]: # (Image References)
+
+[image1]: ./net_images/2_50kms.jpg "2_50kms"
+[image2]: ./net_images/12_priority_road.jpg  "12_priority_road"
+[image3]: ./net_images/23_slippery-road.jpg "23_slippery-road"
+[image4]: ./net_images/25_roadwork.jpg "25_roadwork"
+[image5]: ./net_images/14_Stop_Sign.jpg "14_Stop_Sign"
+[image6]: ./examples/grayscale.jpg "Grayscaling"
+[image7]: ./examples/image11.jpg "dataset"
 
 ---
 ### Writeup / README
@@ -52,7 +61,7 @@ by using RGB image and it will be easy to normalize.
 
 Here is an example of a traffic sign image before and after grayscaling.
 
-![alt text][image2]
+![alt text][image6]
 
 
 #### 2. Describe what your final model architecture looks like including model type, layers, layer sizes, connectivity, etc.) Consider including a diagram and/or table describing the final model.
@@ -112,8 +121,11 @@ The final accuracy of the model scored 99% on validation; it also reached 93% on
 
 Here are five German traffic signs that I found on the web:
 
-![alt text][2_50kms] ![alt text][12_priority_road] ![alt text][23_slippery-road] 
-![alt text][25_roadwork] ![alt text][14_Stop_Sign]
+![alt text][image1]
+![alt text][image2]
+![alt text][image3]
+![alt text][image4]
+![alt text][image5]
 
 and all the images was classifed correctly 
 
@@ -155,9 +167,3 @@ The top five soft max probabilities were
  [7.83899e-01 1.04636e-01 2.93637e-02 2.06891e-02 1.69446e-02]
  [9.98965e-01 2.84062e-04 2.43942e-04 1.90317e-04 8.77580e-05]
  [8.90700e-01 3.47507e-02 2.82695e-02 2.45680e-02 1.88539e-02]] 
-  
-
-### (Optional) Visualizing the Neural Network (See Step 4 of the Ipython notebook for more details)
-#### 1. Discuss the visual output of your trained network's feature maps. What characteristics did the neural network use to make classifications?
-
-
