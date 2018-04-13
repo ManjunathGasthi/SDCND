@@ -24,7 +24,7 @@ The goals / steps of this project are the following:
 [image4]: ./net_images/25_roadwork.jpg "25_roadwork"
 [image5]: ./net_images/14_Stop_Sign.jpg "14_Stop_Sign"
 [image6]: ./examples/grayscale.jpg "Grayscaling"
-[image7]: ./examples/image11.jpg "dataset"
+[image7]: ./examples/image11.png "dataset"
 
 ---
 ### Writeup / README
@@ -50,7 +50,7 @@ signs data set:
 
 Here is an exploratory visualization of the data set. listed one random image for one group in dataset.
 
-![alt text][image1]
+![alt text][image7]
 
 ### Design and Test a Model Architecture
 
