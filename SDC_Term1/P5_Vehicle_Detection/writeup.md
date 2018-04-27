@@ -90,7 +90,6 @@ The performance of the method calculating HOG on each particular window was slow
 ![alt text][image89]
 ![alt text][image87]
 
-![alt text][image87]
 ---
 
 ### Video Implementation
