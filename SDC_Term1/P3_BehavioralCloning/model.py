@@ -1,84 +1,96 @@
+# Generic imports
 import csv
 import cv2
+import random
 import numpy as np
+import pandas as pd
+from sklearn.utils import shuffle
+from sklearn.model_selection import train_test_split
+from scipy.misc import imread, imsave
+import tensorflow as tf
 
+# Keras imports
 import keras
-from keras.models import Sequential
-from keras.layers import Flatten, Dense, Lambda
-from keras.layers.convolutional import Convolution2D, Cropping2D
+from keras.optimizers import *
+from keras.models import Sequential, model_from_json, load_model
+from keras.layers import Flatten, Dense, Activation, Dropout, Lambda, Cropping2D, ELU
+from keras.layers.convolutional import Convolution2D
 from keras.layers.pooling import MaxPooling2D
+from keras.layers.core import Dropout
+from keras.callbacks import EarlyStopping
 
-lines = []
+# File Management
+FOLDER_PATH = 'data/'
+FILE_CSV = './data/driving_log.csv'
 
-# Open the csv log file and read the file name of the figure
-with open('./data/driving_log.csv') as csvfile:
-    reader = csv.reader(csvfile)
-	# Skip the column names row
-    next(reader, None)
-    for line in reader:
-        lines.append(line)
-        
-images = []
-measurements = []
-        
-for line in lines:
-    for i in range(3):
-        source_path = line[i]   # read the middle, left, right images
-        token = source_path.split('/')
-        filename = token[-1]
-        local_path = './data/IMG/' + filename  # in order to run the code on AWS
-        image = cv2.imread(local_path)
-        images.append(image)
-    correction = 0.2 
-    measurement = float(line[3])
-    measurements.append(measurement)
-    measurements.append(measurement+correction)
-    measurements.append(measurement-correction)
-	
-print(len(images))  
-print(len(measurements))
-    
-augmented_images = []
-augmented_measurements = []
+# Load CSV for 4 Columns
+DATA = pd.read_csv(FILE_CSV, usecols = range(0,4)) 
 
-# flip the images to generate more images
-for image, measurement in zip(images, measurements):
-    augmented_images.append(image)
-    augmented_measurements.append(measurement)
-    flipped_image = cv2.flip(image, 1)
-    flipped_measurement = measurement * -1.0
-    augmented_images.append(flipped_image)
-    augmented_measurements.append(flipped_measurement)
-    
-print(len(augmented_measurements))
-    
-    
-X_train = np.array(augmented_images)
-y_train = np.array(augmented_measurements)
+## Split the training data into training and validation
+TRAIN_DATA, VALIDATION_DATA = train_test_split(DATA, test_size = 0.15)
 
-print(X_train.shape)
-print(X_train[1].shape)
+# Hyper-parameters Settings
+BATCH_SIZE = 32
+NUMBER_OF_EPOCHS = 10
+NUM_TRAIN_DATA, NUM_VALID_DATA = len(TRAIN_DATA), len(VALIDATION_DATA)
 
+def generator(data, batch_size):
+    POSITION, CORRECTION, DATA_SIZE = ['left', 'center', 'right'], [.25, 0, -.25], len(data)
+    while True:
+        for start in range(0, DATA_SIZE, batch_size):
+            images, measurements = [], []
+            
+            # Reading images and measurement for 3 angles which is ['left', 'center', 'right']
+            for i in range(3):
+                for rows in range(start, start + batch_size):
+                    if rows < DATA_SIZE:
+                        row = data.index[rows]
+                        measurement = data['steering'][row] + CORRECTION[i] # create adjusted steering measurements for the side camera images
+                        image = imread(FOLDER_PATH + data[POSITION[i]][row].strip()) # Reading images and remove whitespace in image path
+                        measurements.extend([measurement, -measurement]) # image, flipped image
+                        images.extend([image, np.fliplr(image)])  # image, flipped image
+            yield np.array(images), np.array(measurements)
+            
+            
+# Compile and train the model using the generator function
+train_generator = generator(TRAIN_DATA, batch_size=BATCH_SIZE)
+validation_generator = generator(VALIDATION_DATA, batch_size=BATCH_SIZE)
 
-# Nvidia End to End Self-driving Car CNN
+# Building the model according to Nvidia's Model from https://arxiv.org/pdf/1604.07316v1.pdf
 model = Sequential()
-model.add(Lambda(lambda x: x/255.0 - 0.5, input_shape = (160, 320, 3)))
-model.add(Cropping2D(cropping=((50,20),(0,0))))
-model.add(Convolution2D(24,5,5, subsample=(2,2), activation='relu'))
-model.add(Convolution2D(36,5,5, subsample=(2,2), activation='relu'))
-model.add(Convolution2D(48,5,5, subsample=(2,2), activation='relu'))
-model.add(Convolution2D(64,3,3, activation='relu'))
-model.add(Convolution2D(64,3,3, activation='relu'))
+model.add(Lambda(lambda x: (x / 127.5) - 1., input_shape = (160, 320, 3)))
+model.add(Cropping2D(cropping=((74,24), (0,0))))
+model.add(Convolution2D(24,5,5,subsample=(2,2),activation='relu'))
+model.add(Convolution2D(36,5,5,subsample=(2,2),activation='relu'))
+model.add(Convolution2D(48,5,5,subsample=(2,2),activation='relu'))
+model.add(Convolution2D(64,3,3,activation='relu'))
+model.add(Convolution2D(64,3,3,activation='relu'))
 model.add(Flatten())
+model.add(Dropout(.5))
+model.add(Dense(1164))
+model.add(Activation('relu'))
 model.add(Dense(100))
+model.add(Activation('relu'))
 model.add(Dense(50))
+model.add(Activation('relu'))
 model.add(Dense(10))
+model.add(Activation('relu'))
 model.add(Dense(1))
+model.summary()
+model.compile(loss='mse', optimizer='adam')
 
-print('model ready')
+# Stop training when a monitored quantity has stopped improving for 2 epochs
+# early_stopping = EarlyStopping(monitor='val_loss', patience = 2, verbose = 1, mode = 'auto')
 
-model.compile(optimizer='adam', loss = 'mse')
-model.fit(X_train, y_train, validation_split=0.2, shuffle=True, batch_size=128, nb_epoch = 5)
+history_object = model.fit_generator(train_generator,
+                 samples_per_epoch = NUM_TRAIN_DATA,
+                 validation_data = validation_generator,
+                 nb_val_samples = NUM_VALID_DATA,
+                 nb_epoch = NUMBER_OF_EPOCHS,
+                 verbose = 1)
 
+print('Saving model...')
 model.save('model.h5')
-print('Model Saved!')
+with open('model.json', "w") as json_file:
+    json_file.write(model.to_json())
+print("FILE_MODEL.")
