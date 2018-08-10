@@ -61,6 +61,17 @@ OUTPUT: values provided by the c++ program to the simulator
    * On windows, you may need to run: `cmake .. -G "Unix Makefiles" && make`
 4. Run it: `./ExtendedKF `
 
+## Connecting to terminal & using simulator results 
+
+From the build directory, execute ./ExtendedKF.
+
+Terminal should be connected as 
+![Connectivity](https://github.com/ManjunathGasthi/SDCND/blob/master/SDCND_Term2/CarND-Extended-Kalman-Filter-Project/connectivity.PNG)
+
+after running the EKF with dataset 1 in the simulator :
+![Connectivity](https://github.com/ManjunathGasthi/SDCND/blob/master/SDCND_Term2/CarND-Extended-Kalman-Filter-Project/result.PNG)
+
+
 ## Editor Settings
 
 We've purposefully kept editor configuration files out of this repo in order to
