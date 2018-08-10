@@ -22,6 +22,8 @@ public:
 
   // measurement covariance matrix
   Eigen::MatrixXd R_;
+  
+  float PI_;
 
   /**
    * Constructor
