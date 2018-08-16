@@ -145,7 +145,7 @@ class FG_eval {
 MPC::MPC() {}
 MPC::~MPC() {}
 
-vector<double> MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs) {
+vector<double> MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs, Eigen::VectorXd weights) {
   bool ok = true;
   size_t i;
   typedef CPPAD_TESTVECTOR(double) Dvector;
