@@ -71,9 +71,10 @@ int main() {
   // MPC is initialized here!
   MPC mpc;
 
-  double prv_steering=0.0;
-  double prv_acc=0.0;
-  h.onMessage([&mpc](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length,
+  double past_steer=0.0;
+  double past_acc=0.0;
+
+  h.onMessage([&mpc,&past_steer,&past_acc](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length,
                      uWS::OpCode opCode) {
     // "42" at the start of the message means there's a websocket message event.
     // The 4 signifies a websocket message
@@ -94,19 +95,19 @@ int main() {
           double psi = j[1]["psi"];
           double v = j[1]["speed"];
 
-          prv_steering = j[1]["steering_angle"];
-          prv_steering = - prv_steering;
-          std::cout << "Recovered steering angle: " << prv_steering << std::endl;
+          past_steer = j[1]["steering_angle"];
+          past_steer = - past_steer;
+          std::cout << "Recovered steering angle: " << past_steer << std::endl;
 
-          prv_acc = j[1]["throttle"];
+          past_acc = j[1]["throttle"];
 
           v = v * 1.61 / 3.6;
           double latency = 0.1;
           double Lf = 2.67;
           double latency_x = px + v * cos(psi) * latency;
           double latency_y = py + v * sin(psi) * latency;
-          double latency_psi = psi + v / Lf * prv_steering * latency;
-          double latency_v = v + prv_acc * latency;
+          double latency_psi = psi + v / Lf * past_steer * latency;
+          double latency_v = v + past_acc * latency;
           // x_[t+1] = x[t] + v[t] * cos(psi[t]) * dt
           // y_[t+1] = y[t] + v[t] * sin(psi[t]) * dt
           // psi_[t+1] = psi[t] + v[t] / Lf * delta[t] * dt
@@ -138,7 +139,8 @@ int main() {
 
 
           Eigen::VectorXd state(8);
-          state << 0.0, 0.0, 0.0, v, cte, epsi, prv_steering, prv_acc;
+          state << 0.0, 0.0, 0.0, v, cte, epsi, past_steer, past_acc;
+
           /*
           * TODO: Calculate steering angle and throttle using MPC.
           *
@@ -147,7 +149,7 @@ int main() {
           */
           Eigen::VectorXd weights(8);
           weights << 500.0, 80000.0, 3.5, 80.0 * 1.61 / 3.6, 20.0, 1.0, 200.0, 1.0;
-          auto vars = mpc.Solve(state, coeffs );
+          auto vars = mpc.Solve(state, coeffs, weights);
           double steer_value;
           double throttle_value;
 
