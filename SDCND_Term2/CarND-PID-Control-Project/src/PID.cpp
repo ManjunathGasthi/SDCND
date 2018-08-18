@@ -26,7 +26,7 @@ void PID::UpdateError(double cte) {
 }
 
 double PID::Signal() {
-  return - d_error * Kd_ - p_error * Kp_ - i_error * Ki_;
+  return - d_error * Kd - p_error * Kp - i_error * Ki;
 }
 
 double PID::TotalError() {
