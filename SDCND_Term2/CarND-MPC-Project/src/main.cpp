@@ -101,6 +101,7 @@ int main() {
 
           vector<double> waypoints_x;
           vector<double> waypoints_y;
+		  int degree = 3;
 
           // transform waypoints to be from car's perspective
           // this means we can consider px = 0, py = 0, and psi = 0
@@ -108,8 +109,8 @@ int main() {
           for (int i = 0; i < ptsx.size(); i++) {
             double dx = ptsx[i] - px;
             double dy = ptsy[i] - py;
-            waypoints_x.push_back(dx * cos(-psi) - dy * sin(-psi));
-            waypoints_y.push_back(dx * sin(-psi) + dy * cos(-psi));
+            waypoints_x.push_back(dy * sin(psi) + dx * cos(psi));
+            waypoints_y.push_back(dy * cos(psi) - dx * sin(psi));
           }
 
           double* ptrx = &waypoints_x[0];
@@ -117,7 +118,7 @@ int main() {
           Eigen::Map<Eigen::VectorXd> waypoints_x_eig(ptrx, 6);
           Eigen::Map<Eigen::VectorXd> waypoints_y_eig(ptry, 6);
 
-          auto coeffs = polyfit(waypoints_x_eig, waypoints_y_eig, 3);
+          auto coeffs = polyfit(waypoints_x_eig, waypoints_y_eig, degree);
           double cte = polyeval(coeffs, 0);  // px = 0, py = 0
           double epsi = -atan(coeffs[1]);  // p
 
