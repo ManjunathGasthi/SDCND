@@ -11,9 +11,9 @@ PID::PID() {}
 PID::~PID() {}
 
 void PID::Init(double Kp, double Ki, double Kd) {
-  Kp=Kp;
-  Ki=Ki;
-  Kd=Kd;
+  Kp_=Kp;
+  Ki_=Ki;
+  Kd_=Kd;
   d_error = 0;
   p_error = 0;
   i_error = 0;
@@ -26,7 +26,7 @@ void PID::UpdateError(double cte) {
 }
 
 double PID::Signal() {
-  return - d_error * Kd - p_error * Kp - i_error * Ki;
+  return - d_error * Kd_ - p_error * Kp_ - i_error * Ki_;
 }
 
 double PID::TotalError() {
