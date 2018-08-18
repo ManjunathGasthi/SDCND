@@ -21,7 +21,7 @@ double dt = 0.1;
 // This is the length from front to CoG that has a similar radius.
 const double Lf = 2.67;
 
-double ref_v = 30;
+double ref_v = 30 * 1.61 / 3.6;;
 size_t x_start = 0;
 size_t y_start = x_start + N;
 size_t psi_start = y_start + N;
@@ -89,24 +89,32 @@ public:
 
       // The rest of the constraints
       for (int t = 1; t < N; t++) {
+		  
+          // The state at time t+1 .		  
           AD<double> x1 = vars[x_start + t];
-          AD<double> x0 = vars[x_start + t - 1];
           AD<double> y1 = vars[y_start + t];
-          AD<double> y0 = vars[y_start + t - 1];
           AD<double> psi1 = vars[psi_start + t];
-          AD<double> psi0 = vars[psi_start + t - 1];
           AD<double> v1 = vars[v_start + t];
-          AD<double> v0 = vars[v_start + t - 1];
           AD<double> cte1 = vars[cte_start + t];
-          AD<double> cte0 = vars[cte_start + t - 1];
           AD<double> epsi1 = vars[epsi_start + t];
-          AD<double> epsi0 = vars[epsi_start + t - 1];
+
+	      // The state at time t.	  
+		  AD<double> x0 = vars[x_start + t - 1];
+          AD<double> y0 = vars[y_start + t - 1];
+          AD<double> psi0 = vars[psi_start + t - 1];
+          AD<double> v0 = vars[v_start + t - 1];	
+          AD<double> cte0 = vars[cte_start + t - 1];
+          AD<double> epsi0 = vars[epsi_start + t - 1];	
+		  
+		  // Only consider the actuation at time t.
           AD<double> a = vars[a_start + t - 1];
           AD<double> delta = vars[delta_start + t - 1];
+		  
           if (t > 1) {   // use previous actuations (to account for latency)
               a = vars[a_start + t - 2];
               delta = vars[delta_start + t - 2];
           }
+		  
           AD<double> f0 = coeffs[0] + coeffs[1] * x0 + coeffs[2] * CppAD::pow(x0, 2) + coeffs[3] * CppAD::pow(x0, 3);
           AD<double> psides0 = CppAD::atan(coeffs[1] + 2 * coeffs[2] * x0 + 3 * coeffs[3] * CppAD::pow(x0, 2));
 
