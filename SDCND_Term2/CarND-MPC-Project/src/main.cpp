@@ -101,8 +101,9 @@ int main() {
 
           double latency_x = px + v * cos(psi) * latency;
           double latency_y = py + v * sin(psi) * latency;
-          double latency_psi = psi + v / Lf * past_steer * latency;
-          double latency_v = v + past_acc * latency;
+          double latency_psi = psi + v / Lf * steer_value * latency;
+          double latency_v = v + throttle_value * latency;
+		  
           px = latency_x;
           py = latency_y;
           psi = latency_psi;
